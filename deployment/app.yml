@@ -1,15 +1,20 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   labels:
     service: openprofile-api
   name: openprofile-api
   namespace: default
 spec:
+  serviceName: "openprofile-api"
   replicas: 1
   selector:
     matchLabels:
       service: openprofile-api
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
   template:
     metadata:
       labels:
@@ -31,16 +36,35 @@ spec:
             limits:
               memory: "512Mi"
           volumeMounts:
+            - mountPath: /app/storage
+              subPath: storage
+              name: openprofile-api-data
             - mountPath: /app/config.yml
               name: openprofile-api-config
               subPath: config.yml
           env:
             - name: CONFIG_FILE_PATH
               value: /app/config.yml
+          readinessProbe:
+            exec:
+              command: [ "sqlite3", "/app/storage/db.sqlite", ".tables" ]
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 2
       volumes:
         - name: openprofile-api-config
           secret:
             secretName: openprofile-api-secrets
+  volumeClaimTemplates:
+    - metadata:
+        name: openprofile-api-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: "do-block-storage"
+
 ---
 apiVersion: v1
 kind: Service
