@@ -89,6 +89,3 @@ CREATE TABLE cities
 );
 
 CREATE INDEX idx_cities_name ON cities (LOWER(city_name));
-
-INSERT INTO spaces (id, name, handle, bot_id)
-VALUES ('fVbJYOYJuz5WrU5', 'Open Profile', 'openprofile', '6602798881')
