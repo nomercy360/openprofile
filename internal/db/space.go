@@ -1,6 +1,7 @@
 package db
 
 import (
+	"log"
 	"time"
 )
 
@@ -16,45 +17,64 @@ type Space struct {
 }
 
 func (s *storage) ListSpaces(search string) ([]Space, error) {
-	badges := make([]Space, 0)
-
 	query := `
         SELECT id, handle, name, description, picture_url, created_at, updated_at, bot_id
         FROM spaces
     `
+	var args []interface{}
 
 	if search != "" {
-		query += " WHERE name ILIKE $1"
+		query += " WHERE name LIKE ?"
 		search = "%" + search + "%"
+		args = append(args, search)
 	}
 
-	var err error
-	if search == "" {
-		err = s.db.Select(&badges, query)
-	} else {
-		err = s.db.Select(&badges, query, search)
-	}
+	query += " ORDER BY created_at DESC"
 
+	rows, err := s.db.Query(query, args...)
 	if err != nil {
+		log.Println("Error executing query:", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var spaces []Space
+	for rows.Next() {
+		var space Space
+		if err := rows.Scan(
+			&space.ID, &space.Handle, &space.Name, &space.Description,
+			&space.PictureURL, &space.CreatedAt, &space.UpdatedAt, &space.BotID,
+		); err != nil {
+			log.Println("Error scanning row:", err)
+			return nil, err
+		}
+		spaces = append(spaces, space)
+	}
+
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return badges, nil
+	return spaces, nil
 }
 
 func (s *storage) GetSpaceByHandle(handle string) (Space, error) {
-	var space Space
-
 	query := `
         SELECT id, handle, name, description, picture_url, created_at, updated_at, bot_id
         FROM spaces
-        WHERE handle = $1
+        WHERE handle = ?
     `
 
-	err := s.db.Get(&space, query, handle)
+	var space Space
+	err := s.db.QueryRow(query, handle).Scan(
+		&space.ID, &space.Handle, &space.Name, &space.Description,
+		&space.PictureURL, &space.CreatedAt, &space.UpdatedAt, &space.BotID,
+	)
+
 	if err != nil && IsNoRowsError(err) {
 		return Space{}, ErrNotFound
 	} else if err != nil {
+		log.Println("Error fetching space by handle:", err)
 		return Space{}, err
 	}
 

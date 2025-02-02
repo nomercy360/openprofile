@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
@@ -28,7 +27,7 @@ import (
 type Config struct {
 	Host          string `yaml:"host"`
 	Port          int    `yaml:"port"`
-	DatabaseURL   string `yaml:"db_url"`
+	DBPath        string `yaml:"db_path"`
 	TelegramBotID int64  `yaml:"telegram_bot_id"`
 	JWTSecret     string `yaml:"jwt_secret"`
 	MetaFetchURL  string `yaml:"meta_fetch_url"`
@@ -208,9 +207,7 @@ func main() {
 		log.Fatalf("invalid configuration: %v", err)
 	}
 
-	dbConn, err := sql.Open("postgres", cfg.DatabaseURL)
-
-	storage, err := db.ConnectDB(dbConn)
+	storage, err := db.ConnectDB(cfg.DBPath)
 
 	if err != nil {
 		log.Fatalf("failed to create storage: %v", err)

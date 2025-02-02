@@ -1,91 +1,94 @@
 CREATE TABLE users
 (
-    id            VARCHAR(255) PRIMARY KEY,
-    chat_id       BIGINT UNIQUE NOT NULL,
-    username      VARCHAR(255),
-    first_name    VARCHAR(255),
-    last_name     VARCHAR(255),
-    created_at    timestamptz   NOT NULL DEFAULT NOW(),
-    updated_at    timestamptz   NOT NULL DEFAULT NOW(),
-    language_code VARCHAR(2)    NOT NULL DEFAULT 'en',
-    published_at  timestamptz,
-    hidden_at     timestamptz            DEFAULT NOW(),
-    avatar_url    VARCHAR(512),
-    title         VARCHAR(255),
+    id            TEXT PRIMARY KEY,
+    chat_id       INTEGER UNIQUE NOT NULL,
+    username      TEXT,
+    first_name    TEXT,
+    last_name     TEXT,
+    created_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    language_code TEXT           NOT NULL DEFAULT 'en',
+    published_at  DATETIME,
+    hidden_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    avatar_url    TEXT,
+    title         TEXT,
     description   TEXT,
-    review_status VARCHAR(255)  NOT NULL DEFAULT 'pending',
+    review_status TEXT           NOT NULL DEFAULT 'pending',
     rating        INTEGER,
-    latitude      FLOAT,
-    longitude     FLOAT,
-    country_code  VARCHAR(2),
-    location_name VARCHAR(255)
+    latitude      REAL,
+    longitude     REAL,
+    country_code  TEXT,
+    location_name TEXT
 );
 
 CREATE TABLE badges
 (
-    id         VARCHAR(255) PRIMARY KEY,
-    text       VARCHAR(255) NOT NULL,
-    icon       VARCHAR(255),
-    color      VARCHAR(7),
-    created_at timestamptz DEFAULT NOW()
+    id         TEXT PRIMARY KEY,
+    text       TEXT NOT NULL,
+    icon       TEXT,
+    color      TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE opportunities
 (
-    id          VARCHAR(255) PRIMARY KEY,
-    text        VARCHAR(255) NOT NULL,
+    id          TEXT PRIMARY KEY,
+    text        TEXT NOT NULL,
     description TEXT,
-    icon        VARCHAR(255),
-    color       VARCHAR(7),
-    created_at  timestamptz DEFAULT NOW()
+    icon        TEXT,
+    color       TEXT,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE user_badges
 (
-    user_id  VARCHAR(255) REFERENCES users (id),
-    badge_id VARCHAR(255) REFERENCES badges (id),
+    user_id  TEXT REFERENCES users (id),
+    badge_id TEXT REFERENCES badges (id),
     UNIQUE (user_id, badge_id)
 );
 
 CREATE TABLE user_opportunities
 (
-    user_id        VARCHAR(255) REFERENCES users (id),
-    opportunity_id VARCHAR(255) REFERENCES opportunities (id),
+    user_id        TEXT REFERENCES users (id),
+    opportunity_id TEXT REFERENCES opportunities (id),
     UNIQUE (user_id, opportunity_id)
 );
 
-DROP TABLE space_users;
-DROP TABLE spaces;
+DROP TABLE IF EXISTS space_users;
+DROP TABLE IF EXISTS spaces;
 
 CREATE TABLE spaces
 (
-    id          VARCHAR(255) PRIMARY KEY,
-    name        VARCHAR(255)  NOT NULL,
-    handle      VARCHAR(255)  NOT NULL,
+    id          TEXT PRIMARY KEY,
+    name        TEXT           NOT NULL,
+    handle      TEXT           NOT NULL,
     description TEXT,
-    picture_url   VARCHAR(512),
-    created_at  timestamptz DEFAULT NOW(),
-    updated_at  timestamptz DEFAULT NOW(),
-    bot_id      BIGINT UNIQUE NOT NULL
+    picture_url TEXT,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    bot_id      INTEGER UNIQUE NOT NULL
 );
 
 CREATE TABLE space_users
 (
-    space_id VARCHAR(255) REFERENCES spaces (id),
-    user_id  VARCHAR(255) REFERENCES users (id),
-    role     VARCHAR(255) NOT NULL DEFAULT 'member',
+    space_id TEXT REFERENCES spaces (id),
+    user_id  TEXT REFERENCES users (id),
+    role     TEXT NOT NULL DEFAULT 'member',
     UNIQUE (space_id, user_id)
 );
 
 CREATE TABLE cities
 (
-    id           SERIAL PRIMARY KEY,
-    city_name    VARCHAR(255) NOT NULL,
-    country_code VARCHAR(2)   NOT NULL, -- ISO 3166-1 alpha-2 (e.g., 'US', 'TH')
-    latitude     FLOAT        NOT NULL,
-    longitude    FLOAT        NOT NULL,
-    population   BIGINT       NOT NULL, -- Helps rank popular cities
-    UNIQUE (city_name, country_code)    -- Ensures no duplicates
+    id           TEXT PRIMARY KEY,
+    city_name    TEXT    NOT NULL,
+    country_code TEXT    NOT NULL,   -- ISO 3166-1 alpha-2 (e.g., 'US', 'TH')
+    latitude     REAL    NOT NULL,
+    longitude    REAL    NOT NULL,
+    population   INTEGER NOT NULL,   -- Helps rank popular cities
+    UNIQUE (city_name, country_code) -- Ensures no duplicates
 );
 
 CREATE INDEX idx_cities_name ON cities (LOWER(city_name));
+
+INSERT INTO spaces (id, name, handle, bot_id)
+VALUES ('fVbJYOYJuz5WrU5', 'Open Profile', 'openprofile', '6602798881')

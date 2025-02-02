@@ -10,10 +10,9 @@ require (
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/go-telegram/bot v1.12.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
-	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo-jwt/v4 v4.3.0
 	github.com/labstack/echo/v4 v4.13.3
-	github.com/lib/pq v1.10.9
+	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/telegram-mini-apps/init-data-golang v1.3.0
 	gopkg.in/yaml.v3 v3.0.1
 )

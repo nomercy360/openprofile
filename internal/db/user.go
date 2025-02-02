@@ -52,10 +52,20 @@ func (s *storage) CreateUser(user User) error {
 		INSERT INTO users (
 			id, chat_id, username, first_name, last_name, language_code, avatar_url
 		) VALUES (
-			:id, :chat_id, :username, :first_name, :last_name, :language_code, :avatar_url
+			?, ?, ?, ?, ?, ?, ?
 		)
 	`
-	_, err := s.db.NamedExec(query, user)
+	_, err := s.db.Exec(
+		query,
+		user.ID,
+		user.ChatID,
+		user.Username,
+		user.FirstName,
+		user.LastName,
+		user.LanguageCode,
+		user.AvatarURL,
+	)
+
 	return err
 }
 
@@ -63,8 +73,26 @@ func (s *storage) GetUserByChatID(chatID int64) (User, error) {
 	var user User
 	query := `
 		SELECT 
-            u.*, 
-            COALESCE(json_agg(json_build_object('id', b.id, 'text', b.text, 'icon', b.icon, 'color', b.color)) 
+            u.id,
+            u.chat_id,
+            u.username,
+            u.first_name,
+            u.last_name,
+            u.created_at,
+            u.updated_at,
+            u.language_code,
+            u.published_at,
+            u.hidden_at,
+            u.avatar_url,
+            u.title,
+            u.description,
+            u.review_status,
+            u.rating,
+            u.latitude,
+            u.longitude,
+            u.country_code,
+            u.location_name,
+            COALESCE(json_group_array(json_object('id', b.id, 'text', b.text, 'icon', b.icon, 'color', b.color)) 
                 FILTER (WHERE b.id IS NOT NULL), '[]') AS badges
         FROM users u
         LEFT JOIN user_badges ub ON u.id = ub.user_id
@@ -73,13 +101,29 @@ func (s *storage) GetUserByChatID(chatID int64) (User, error) {
 		GROUP BY u.id
 	`
 
-	row := s.db.QueryRowx(query, chatID)
+	row := s.db.QueryRow(query, chatID)
 	var badgeJSON string
 	err := row.Scan(
-		&user.ID, &user.ChatID, &user.Username, &user.FirstName, &user.LastName,
-		&user.CreatedAt, &user.UpdatedAt, &user.LanguageCode, &user.PublishedAt, &user.HiddenAt,
-		&user.AvatarURL, &user.Title, &user.Description, &user.ReviewStatus, &user.Rating,
-		&user.Latitude, &user.Longitude, &user.Country, &user.Location, &badgeJSON,
+		&user.ID,
+		&user.ChatID,
+		&user.Username,
+		&user.FirstName,
+		&user.LastName,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.LanguageCode,
+		&user.PublishedAt,
+		&user.HiddenAt,
+		&user.AvatarURL,
+		&user.Title,
+		&user.Description,
+		&user.ReviewStatus,
+		&user.Rating,
+		&user.Latitude,
+		&user.Longitude,
+		&user.Country,
+		&user.Location,
+		&badgeJSON,
 	)
 
 	if err != nil && IsNoRowsError(err) {
@@ -100,8 +144,26 @@ func (s *storage) GetUserByID(id string) (User, error) {
 	var user User
 	query := `
 		SELECT 
-            u.*, 
-            COALESCE(json_agg(json_build_object('id', b.id, 'text', b.text, 'icon', b.icon, 'color', b.color)) 
+            u.id,
+            u.chat_id,
+            u.username,
+            u.first_name,
+            u.last_name,
+            u.created_at,
+            u.updated_at,
+            u.language_code,
+            u.published_at,
+            u.hidden_at,
+            u.avatar_url,
+            u.title,
+            u.description,
+            u.review_status,
+            u.rating,
+            u.latitude,
+            u.longitude,
+            u.country_code,
+            u.location_name,
+            COALESCE(json_group_array(json_object('id', b.id, 'text', b.text, 'icon', b.icon, 'color', b.color)) 
                 FILTER (WHERE b.id IS NOT NULL), '[]') AS badges
         FROM users u
         LEFT JOIN user_badges ub ON u.id = ub.user_id
@@ -110,13 +172,29 @@ func (s *storage) GetUserByID(id string) (User, error) {
 		GROUP BY u.id
 	`
 
-	row := s.db.QueryRowx(query, id)
+	row := s.db.QueryRow(query, id)
 	var badgeJSON string
 	err := row.Scan(
-		&user.ID, &user.ChatID, &user.Username, &user.FirstName, &user.LastName,
-		&user.CreatedAt, &user.UpdatedAt, &user.LanguageCode, &user.PublishedAt, &user.HiddenAt,
-		&user.AvatarURL, &user.Title, &user.Description, &user.ReviewStatus, &user.Rating,
-		&user.Latitude, &user.Longitude, &user.Country, &user.Location, &badgeJSON,
+		&user.ID,
+		&user.ChatID,
+		&user.Username,
+		&user.FirstName,
+		&user.LastName,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.LanguageCode,
+		&user.PublishedAt,
+		&user.HiddenAt,
+		&user.AvatarURL,
+		&user.Title,
+		&user.Description,
+		&user.ReviewStatus,
+		&user.Rating,
+		&user.Latitude,
+		&user.Longitude,
+		&user.Country,
+		&user.Location,
+		&badgeJSON,
 	)
 
 	if err != nil && IsNoRowsError(err) {
@@ -135,8 +213,29 @@ func (s *storage) GetUserByID(id string) (User, error) {
 
 func (s *storage) GetUserByUsername(username string) (User, error) {
 	var user User
-	query := "SELECT * FROM users WHERE username = $1"
-	err := s.db.Get(&user, query, username)
+	query := "SELECT id, chat_id, username, first_name, last_name, created_at, updated_at, language_code, published_at, hidden_at, avatar_url, title, description, review_status, rating, latitude, longitude, location_name, country_code FROM users WHERE username = ?"
+
+	err := s.db.QueryRow(query, username).Scan(
+		&user.ID,
+		&user.ChatID,
+		&user.Username,
+		&user.FirstName,
+		&user.LastName,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.LanguageCode,
+		&user.PublishedAt,
+		&user.HiddenAt,
+		&user.AvatarURL,
+		&user.Title,
+		&user.Description,
+		&user.ReviewStatus,
+		&user.Rating,
+		&user.Latitude,
+		&user.Longitude,
+		&user.Location,
+		&user.Country,
+	)
 
 	if err != nil && IsNoRowsError(err) {
 		return user, ErrNotFound
@@ -148,52 +247,77 @@ func (s *storage) GetUserByUsername(username string) (User, error) {
 }
 
 func (s *storage) UpdateUser(user User, badges []string) (User, error) {
-	tx, err := s.db.Beginx()
+	tx, err := s.db.Begin()
 	if err != nil {
 		return User{}, err
 	}
-	defer func() {
-		if p := recover(); p != nil {
-			tx.Rollback()
-			panic(p)
-		} else if err != nil {
-			tx.Rollback()
-		} else {
-			err = tx.Commit()
-		}
-	}()
+	defer tx.Rollback()
 
 	query := `
 		UPDATE users SET 
-			first_name = :first_name, last_name = :last_name, 
-			avatar_url = :avatar_url, title = :title, description = :description,
-			updated_at = NOW(), latitude = :latitude, longitude = :longitude,
-			location_name = :location_name, country_code = :country_code
-		WHERE id = :id
+			first_name = ?,
+			last_name = ?, 
+			avatar_url = ?,
+			title = ?, 
+			description = ?,
+			updated_at = CURRENT_TIMESTAMP,
+			latitude = ?,
+			longitude = ?,
+			location_name = ?, 
+			country_code = ?
+		WHERE id = ?
 	`
-	res, err := tx.NamedExec(query, user)
+
+	res, err := tx.Exec(
+		query,
+		user.FirstName,
+		user.LastName,
+		user.AvatarURL,
+		user.Title,
+		user.Description,
+		user.Latitude,
+		user.Longitude,
+		user.Location,
+		user.Country,
+		user.ID,
+	)
 	if err != nil {
 		return User{}, err
 	}
 
-	if rows, _ := res.RowsAffected(); rows == 0 {
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return User{}, err
+	}
+	if rows == 0 {
 		return User{}, ErrNotFound
 	}
 
 	if len(badges) > 0 {
-		query = "DELETE FROM user_badges WHERE user_id = $1"
+		query = "DELETE FROM user_badges WHERE user_id = ?"
 		_, err = tx.Exec(query, user.ID)
 		if err != nil {
 			return User{}, err
 		}
 
-		query = "INSERT INTO user_badges (user_id, badge_id) VALUES ($1, $2)"
+		query = "INSERT INTO user_badges (user_id, badge_id) VALUES (?, ?)"
+		stmt, err := tx.Prepare(query)
+		if err != nil {
+			return User{}, err
+		}
+		defer stmt.Close()
+
 		for _, badgeID := range badges {
-			_, err = tx.Exec(query, user.ID, badgeID)
+			_, err = stmt.Exec(user.ID, badgeID)
 			if err != nil {
 				return User{}, err
 			}
 		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return User{}, err
 	}
 
 	return s.GetUserByID(user.ID)
@@ -205,7 +329,7 @@ func (s *storage) ListUsers(page, limit int, searchQuery string) ([]User, error)
 	query := `
         SELECT 
             u.*, 
-            COALESCE(json_agg(json_build_object('id', b.id, 'text', b.text, 'icon', b.icon, 'color', b.color)) 
+            COALESCE(json_group_array(json_object('id', b.id, 'text', b.text, 'icon', b.icon, 'color', b.color)) 
                 FILTER (WHERE b.id IS NOT NULL), '[]') AS badges
         FROM users u
         LEFT JOIN user_badges ub ON u.id = ub.user_id
@@ -220,7 +344,7 @@ func (s *storage) ListUsers(page, limit int, searchQuery string) ([]User, error)
 
 	searchPattern := "%" + strings.ToLower(searchQuery) + "%"
 
-	rows, err := s.db.Queryx(query, searchPattern, limit, offset)
+	rows, err := s.db.Query(query, searchPattern, limit, offset)
 	if err != nil {
 		return nil, err
 	}

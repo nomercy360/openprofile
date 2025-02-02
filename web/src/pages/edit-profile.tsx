@@ -260,19 +260,19 @@ export default function EditProfile() {
 				<div class="flex flex-col items-start w-full">
 					<label class="mb-[2px] text-xs font-bold ml-2 text-muted-foreground">First Name</label>
 					<input
-						class="h-10 rounded-xl bg-input focus:outline-none rounded px-3 w-full"
+						class="w-full border border-border bg-secondary px-4 h-10 rounded-xl focus:outline-none"
 						value={editUser.first_name}
 						onInput={e => setEditUser('first_name', e.currentTarget.value)}
 					/>
 					<label class="mt-3 mb-[2px] text-xs font-bold ml-2 text-muted-foreground">Last Name</label>
 					<input
-						class="h-10 rounded-xl bg-input focus:outline-none rounded px-3 w-full"
+						class="w-full border border-border bg-secondary px-4 h-10 rounded-xl focus:outline-none"
 						value={editUser.last_name}
 						onInput={e => setEditUser('last_name', e.currentTarget.value)}
 					/>
 					<label class="mt-3 mb-[2px] text-xs font-bold ml-2 text-muted-foreground">Title</label>
 					<input
-						class="h-10 rounded-xl bg-input focus:outline-none rounded px-3 w-full"
+						class="w-full border border-border bg-secondary px-4 h-10 rounded-xl focus:outline-none"
 						value={editUser.title}
 						onInput={e => setEditUser('title', e.currentTarget.value)}
 					/>

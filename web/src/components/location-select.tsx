@@ -2,6 +2,7 @@ import { createEffect, createSignal, Show, For, createResource } from 'solid-js'
 import { createQuery } from '@tanstack/solid-query'
 import { fetchCities, UserLocation } from '~/lib/api'
 import { cn } from '~/lib/utils'
+import SearchInput from '~/components/search-input'
 
 type LocationSelectProps = {
 	location: UserLocation
@@ -14,14 +15,6 @@ export function LocationSelect(props: LocationSelectProps) {
 	const [isFetchingLocation, setIsFetchingLocation] = createSignal(false)
 	const [isDecodingLocation, setIsDecodingLocation] = createSignal(false)
 	const [coords, setCoords] = createSignal('')
-	const [search, setSearch] = createSignal('')
-	const [selectedCity, setSelectedCity] = createSignal<UserLocation | null>(null)
-
-	const citiesQuery = createQuery(() => ({
-		queryKey: ['cities', search()],
-		queryFn: () => fetchCities(search()),
-		enabled: search().length > 2, // Only fetch when search is meaningful
-	}))
 
 	createEffect(() => {
 		const { LocationManager } = window.Telegram.WebApp
@@ -127,7 +120,7 @@ export function LocationSelect(props: LocationSelectProps) {
 
 			<Show when={status() === 'denied'}>
 				<button onClick={requestLocationAccess} class="text-sm font-semibold h-10 text-accent-foreground underline">
-					Re-request Location Access
+					Request Location Access
 				</button>
 			</Show>
 
@@ -183,14 +176,11 @@ export function CitySearch(props: CitySearchProps) {
 
 	return (
 		<div class="mt-3">
-			<label for="city-search" class="mb-[2px] text-xs font-bold ml-2 text-muted-foreground">Search for a city</label>
-			<input
-				id="city-search"
-				type="text"
-				class="h-10 rounded-xl bg-input focus:outline-none rounded px-3 w-full"
-				placeholder="Enter city name..."
-				value={search()}
-				onInput={(e) => setSearch(e.currentTarget.value)}
+			<SearchInput
+				search={search()}
+				setSearch={setSearch}
+				placeholder={'Search for a city'}
+				class="w-full"
 			/>
 
 			<Show when={citiesQuery.isFetching}>

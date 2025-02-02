@@ -2,7 +2,7 @@ import { createStore } from 'solid-js/store'
 import { createSignal } from 'solid-js'
 
 
-type User = {
+export type UserProfile = {
 	id: string
 	first_name: string
 	last_name: string
@@ -12,7 +12,7 @@ type User = {
 	language_code: 'en' | 'ru'
 	created_at: string
 	token: string
-	badges: { id: string, name: string, color: string }[]
+	badges: { id: string, text: string, color: string, icon: string }[]
 	opportunities: { id: string, name: string, color: string }[]
 	city: string
 	country: string
@@ -32,11 +32,11 @@ export type Space = {
 }
 
 export const [store, setStore] = createStore<{
-	user: User
+	user: UserProfile
 	space: Space
 	token: string
 }>({
-	user: {} as User,
+	user: {} as UserProfile,
 	token: '',
 	space: {} as Space,
 })

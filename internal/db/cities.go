@@ -1,5 +1,7 @@
 package db
 
+import "log"
+
 type City struct {
 	ID          string  `db:"id" json:"id"`
 	CityName    string  `db:"city_name" json:"city_name"`
@@ -9,16 +11,39 @@ type City struct {
 }
 
 func (s *storage) SearchCities(query string) ([]City, error) {
-	cities := make([]City, 0)
+	sqlQuery := `
+		SELECT id, city_name, country_code, latitude, longitude
+		FROM cities
+		WHERE city_name LIKE ?
+		ORDER BY population DESC
+		LIMIT 10
+	`
 
-	err := s.db.Select(&cities, `
-		SELECT c.id, c.city_name, c.country_code, c.latitude, c.longitude
-		FROM cities c
-		WHERE c.city_name ILIKE $1
-		ORDER BY c.population DESC LIMIT 10`, "%"+query+"%")
-
+	searchTerm := "%" + query + "%"
+	rows, err := s.db.Query(sqlQuery, searchTerm)
 	if err != nil {
-		return cities, nil
+		log.Println("Error executing query:", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var cities []City
+	for rows.Next() {
+		var city City
+		if err := rows.Scan(
+			&city.ID,
+			&city.CityName,
+			&city.CountryCode,
+			&city.Latitude,
+			&city.Longitude,
+		); err != nil {
+			return nil, err
+		}
+		cities = append(cities, city)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return cities, nil

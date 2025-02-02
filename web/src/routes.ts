@@ -4,6 +4,7 @@ import type { RouteDefinition } from '@solidjs/router'
 import NavigationTabs from '~/components/navigation-tabs'
 import EditProfile from '~/pages/edit-profile'
 import FeedPage from '~/pages/feed'
+import PeoplePage from '~/pages/people'
 
 export const routes: RouteDefinition[] = [
 	{
@@ -13,6 +14,10 @@ export const routes: RouteDefinition[] = [
 			{
 				'path': '/',
 				'component': FeedPage,
+			},
+			{
+				'path': '/people',
+				'component': PeoplePage,
 			},
 		],
 	},

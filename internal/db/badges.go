@@ -13,27 +13,37 @@ type Badge struct {
 }
 
 func (s *storage) ListBadges(search string) ([]Badge, error) {
-	badges := make([]Badge, 0)
-
 	query := `
         SELECT id, text, icon, color, created_at
         FROM badges
-        ORDER BY created_at DESC
     `
+	var args []interface{}
 
 	if search != "" {
-		query += " WHERE text ILIKE $1"
+		query += " WHERE text LIKE ?"
 		search = "%" + search + "%"
+		args = append(args, search)
 	}
 
-	var err error
-	if search == "" {
-		err = s.db.Select(&badges, query)
-	} else {
-		err = s.db.Select(&badges, query, search)
-	}
+	query += " ORDER BY created_at DESC"
 
+	rows, err := s.db.Query(query, args...)
 	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var badges []Badge
+	for rows.Next() {
+		var badge Badge
+		err := rows.Scan(&badge.ID, &badge.Text, &badge.Icon, &badge.Color, &badge.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		badges = append(badges, badge)
+	}
+
+	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -42,15 +52,10 @@ func (s *storage) ListBadges(search string) ([]Badge, error) {
 
 func (s *storage) CreateBadge(badge Badge) error {
 	query := `
-		INSERT INTO badges (id, text, icon, color)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO badges (id, text, icon, color, created_at)
+		VALUES (?, ?, ?, ?, ?)
 	`
 
-	_, err := s.db.Exec(query, badge.ID, badge.Text, badge.Icon, badge.Color)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err := s.db.Exec(query, badge.ID, badge.Text, badge.Icon, badge.Color, time.Now())
+	return err
 }

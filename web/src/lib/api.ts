@@ -135,3 +135,8 @@ export const fetchCities = async (query: string) => {
 	const { data } = await apiRequest('/cities?query=' + query)
 	return data
 }
+
+export const fetchProfiles = async (search: string) => {
+	const { data } = await apiRequest(search ? `/users?search=${search}` : '/users')
+	return data
+}

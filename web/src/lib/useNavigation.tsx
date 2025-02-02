@@ -61,7 +61,7 @@ export function NavigationProvider(props: { children: JSX.Element }) {
 	}
 
 	createEffect(() => {
-		if (location.pathname !== '/' && location.pathname !== '/onboarding') {
+		if (location.pathname !== '/' && location.pathname !== '/edit-profile') {
 			backButton.setVisible()
 			backButton.onClick(navigateBack)
 		} else {

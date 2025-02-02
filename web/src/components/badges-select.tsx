@@ -8,6 +8,7 @@ import {
 	Switch,
 } from 'solid-js'
 import { Badge } from '~/lib/api'
+import SearchInput from '~/components/search-input'
 
 export function BadgesSelect(props: {
 	selected: string[]
@@ -38,35 +39,18 @@ export function BadgesSelect(props: {
 	})
 
 	return (
-		<div class='w-full flex items-center justify-center flex-col'>
-			<div class="mt-5 flex h-12 max-w-[320px] w-[320px] flex-row items-center justify-between rounded-lg bg-secondary px-2.5">
-				<input
-					autofocus
-					autocomplete="off"
-					autocorrect="off"
-					autocapitalize="off"
-					spellcheck={false}
-					maxLength={50}
-					class="h-12 w-full bg-transparent text-main placeholder:text-secondary-foreground focus:outline-none"
-					placeholder="Search ideas"
-					type="text"
-					onInput={e => props.setSearch(e.currentTarget.value)}
-					value={props.search}
-				/>
-				<Show when={props.search}>
-					<button
-						class="flex h-10 items-center justify-center px-2.5 text-sm text-secondary-foreground"
-						onClick={() => props.setSearch('')}
-					>
-						Clear
-					</button>
-				</Show>
-			</div>
-			<div class="flex h-11 w-full flex-row items-center justify-between">
+		<div class="w-full flex items-center justify-center flex-col">
+			<SearchInput
+				search={props.search}
+				setSearch={props.setSearch}
+				placeholder="Search ideas"
+				class="mt-5 justify-between"
+			/>
+			<div class="flex h-9 w-full flex-row items-center justify-between">
 				<Switch>
 					<Match when={filteredBadges()?.length || 0 > 0}>
 						<div />
-						<div class="flex h-11 items-center justify-center text-sm text-secondary-foreground">
+						<div class="flex items-center justify-center text-sm text-secondary-foreground">
 							{props.selected.length} / 10
 						</div>
 					</Match>
